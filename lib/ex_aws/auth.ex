@@ -90,7 +90,7 @@ defmodule ExAws.Auth do
 
       uri = URI.parse(url)
 
-      path = url |> Url.get_path(service) |> Url.uri_encode
+      path = url |> Url.get_path(service) |> Url.uri_encode()
       path =
         if uri.query do
           path <> "?" <> uri.query

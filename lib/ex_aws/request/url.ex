@@ -8,7 +8,7 @@ defmodule ExAws.Request.Url do
     config
     |> Map.take([:scheme, :host, :port])
     |> Map.put(:query, query(operation))
-    |> Map.put(:path, operation.path)
+    |> Map.put(:path, uri_encode(operation.path))
     |> normalize_scheme
     |> normalize_path(config.normalize_path)
     |> convert_port_to_integer
@@ -46,30 +46,6 @@ defmodule ExAws.Request.Url do
 
   defp normalize_params(params), do: params
 
-  def sanitize(url, service) when service in ["s3", :s3] do
-    new_path =
-      url
-      |> get_path(service)
-      |> String.replace_prefix("/", "")
-      |> uri_encode()
-
-    query =
-      case String.split(url, "?", parts: 2) do
-        [_] -> nil
-        [_, ""] -> nil
-        [_, q] -> q
-      end
-
-    url
-    |> URI.parse()
-    |> Map.put(:fragment, nil)
-    |> Map.put(:path, "/" <> new_path)
-    |> Map.put(:query, query_replace_spaces(query))
-    |> URI.to_string()
-  end
-
-  def sanitize(url, _), do: String.replace(url, "+", "%20")
-
   def get_path(url, service \\ nil)
   # Elixir's URI.parse will treat everything after the # sign
   # as a fragment. This is correct, but S3 treats it as part
@@ -104,9 +80,6 @@ defmodule ExAws.Request.Url do
   def get_path(url, _), do: URI.parse(url).path
 
   def uri_encode(url), do: URI.encode(url, &valid_path_char?/1)
-
-  defp query_replace_spaces(nil), do: nil
-  defp query_replace_spaces(query), do: String.replace(query, "+", "%20")
 
   # Space character
   defp valid_path_char?(?\ ), do: false

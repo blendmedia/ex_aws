@@ -29,11 +29,11 @@ defmodule ExAws.Request do
     full_headers = ExAws.Auth.headers(method, url, service, config, headers, req_body)
 
     with {:ok, full_headers} <- full_headers do
-      safe_url = ExAws.Request.Url.sanitize(url, service)
+#      safe_url = ExAws.Request.Url.sanitize(url, service)
 
       if config[:debug_requests] do
         Logger.debug(
-          "ExAws: Request URL: #{inspect(safe_url)} HEADERS: #{inspect(full_headers)} BODY: #{
+          "ExAws: Request URL: #{inspect(url)} HEADERS: #{inspect(full_headers)} BODY: #{
             inspect(req_body)
           } ATTEMPT: #{attempt}"
         )
@@ -41,7 +41,7 @@ defmodule ExAws.Request do
 
       case config[:http_client].request(
              method,
-             safe_url,
+             url,
              req_body,
              full_headers,
              Map.get(config, :http_opts, [])
@@ -86,7 +86,7 @@ defmodule ExAws.Request do
 
         {:error, %{reason: reason}} ->
           Logger.warn(
-            "ExAws: HTTP ERROR: #{inspect(reason)} for URL: #{inspect(safe_url)} ATTEMPT: #{
+            "ExAws: HTTP ERROR: #{inspect(reason)} for URL: #{inspect(url)} ATTEMPT: #{
               attempt
             }"
           )
